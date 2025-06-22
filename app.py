@@ -7,15 +7,15 @@ import os
 import traceback
 
 app = Flask(__name__)
-UPLOAD_FOLDER = '/tmp/uploads'
+UPLOAD_FOLDER = 'uploads'
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
-# Load TensorFlow model
+# Load model
 model = tf.keras.applications.MobileNetV2(weights='imagenet', include_top=False, pooling='avg')
 
 try:
     product_ids = np.load('product_ids.npy')
-    features_db = np.load('generate_features.npy').astype(np.float32)  # Adjusted name
+    features_db = np.load('features_db.npy')
 
     assert features_db.shape[0] == product_ids.shape[0], "Mismatch in features and product IDs"
 
@@ -31,7 +31,7 @@ def extract_features(image_path):
         x = tf.keras.preprocessing.image.img_to_array(img)
         x = tf.keras.applications.mobilenet_v2.preprocess_input(np.expand_dims(x, axis=0))
         features = model.predict(x)[0]
-        return features.astype(np.float32)
+        return features
     except Exception as e:
         print("❌ Error in feature extraction:", e)
         traceback.print_exc()
@@ -42,7 +42,6 @@ def search():
     try:
         if 'image' not in request.files:
             return jsonify({'error': 'No image uploaded'}), 400
-
         file = request.files['image']
         filepath = os.path.join(UPLOAD_FOLDER, file.filename)
         file.save(filepath)
@@ -60,6 +59,5 @@ def search():
         traceback.print_exc()
         return jsonify({'error': 'Internal Server Error'}), 500
 
-# Run on port 8080 for Replit
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=8080)
+    app.run(host='0.0.0.0', port=10000)
