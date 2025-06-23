@@ -1,6 +1,6 @@
 flask
 gunicorn
-tensorflow
+tensorflow==2.10.0
 faiss-cpu
 numpy
 pillow
